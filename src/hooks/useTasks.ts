@@ -1,19 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { MaintenanceTask, MaintenanceLog } from '@/types/maintenance';
 import { toast } from '@/hooks/use-toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export function useTasks() {
   return useQuery({
     queryKey: ['maintenance-tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('maintenance_tasks')
-        .select('*')
-        .order('next_due_date', { ascending: true });
-      
-      if (error) throw error;
-      return data as MaintenanceTask[];
+      const response = await fetch(`${API_URL}/api/tasks`);
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json() as Promise<MaintenanceTask[]>;
     },
   });
 }
@@ -22,14 +19,9 @@ export function useActiveTasks() {
   return useQuery({
     queryKey: ['active-maintenance-tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('maintenance_tasks')
-        .select('*')
-        .eq('is_active', true)
-        .order('next_due_date', { ascending: true });
-      
-      if (error) throw error;
-      return data as MaintenanceTask[];
+      const response = await fetch(`${API_URL}/api/tasks/active`);
+      if (!response.ok) throw new Error('Failed to fetch active tasks');
+      return response.json() as Promise<MaintenanceTask[]>;
     },
   });
 }
@@ -38,20 +30,9 @@ export function useMaintenanceLogs() {
   return useQuery({
     queryKey: ['maintenance-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('maintenance_logs')
-        .select(`
-          *,
-          maintenance_tasks (
-            id,
-            title
-          )
-        `)
-        .order('completed_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      return data as MaintenanceLog[];
+      const response = await fetch(`${API_URL}/api/logs`);
+      if (!response.ok) throw new Error('Failed to fetch logs');
+      return response.json() as Promise<MaintenanceLog[]>;
     },
   });
 }
@@ -69,31 +50,15 @@ export function useCompleteTask() {
       completedBy: string; 
       notes?: string;
     }) => {
-      // Create the log entry
-      const { error: logError } = await supabase
-        .from('maintenance_logs')
-        .insert({
-          task_id: task.id,
-          completed_by: completedBy,
-          notes: notes || null,
-        });
-      
-      if (logError) throw logError;
-      
-      // Calculate new due date
-      const today = new Date();
-      const newDueDate = new Date(today);
-      newDueDate.setDate(newDueDate.getDate() + task.frequency_days);
-      
-      // Update the task's next_due_date
-      const { error: updateError } = await supabase
-        .from('maintenance_tasks')
-        .update({ next_due_date: newDueDate.toISOString().split('T')[0] })
-        .eq('id', task.id);
-      
-      if (updateError) throw updateError;
-      
-      return { task, newDueDate };
+      const response = await fetch(`${API_URL}/api/tasks/${task.id}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completedBy, notes: notes || null }),
+      });
+
+      if (!response.ok) throw new Error('Failed to complete task');
+      const result = await response.json();
+      return { task, newDueDate: new Date(result.newDueDate) };
     },
     onSuccess: ({ task, newDueDate }) => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -121,14 +86,14 @@ export function useCreateTask() {
   
   return useMutation({
     mutationFn: async (task: Omit<MaintenanceTask, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('maintenance_tasks')
-        .insert(task)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const response = await fetch(`${API_URL}/api/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(task),
+      });
+
+      if (!response.ok) throw new Error('Failed to create task');
+      return response.json() as Promise<MaintenanceTask>;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -154,15 +119,14 @@ export function useUpdateTask() {
   
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<MaintenanceTask> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('maintenance_tasks')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const response = await fetch(`${API_URL}/api/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error('Failed to update task');
+      return response.json() as Promise<MaintenanceTask>;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -188,12 +152,11 @@ export function useDeleteTask() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('maintenance_tasks')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      const response = await fetch(`${API_URL}/api/tasks/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete task');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
