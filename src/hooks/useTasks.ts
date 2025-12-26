@@ -1,47 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { MaintenanceTask, MaintenanceLog } from '@/types/maintenance';
 import { toast } from '@/hooks/use-toast';
-
-// API helper functions for PostgreSQL queries
-const API_BASE = '/api';
-
-async function fetchFromApi(endpoint: string, options?: RequestInit) {
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.statusText}`);
-  }
-
-  // Gérer les réponses vides ou non-JSON
-  const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    return null;
-  }
-
-  const text = await response.text();
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error('Failed to parse JSON response:', text);
-    throw new Error('Invalid JSON response from server');
-  }
-}
 
 export function useTasks() {
   return useQuery({
     queryKey: ['maintenance-tasks'],
     queryFn: async () => {
-      return fetchFromApi('/tasks');
+      const { data, error } = await supabase
+        .from('maintenance_tasks')
+        .select('*')
+        .order('next_due_date', { ascending: true });
+      
+      if (error) throw error;
+      return data as MaintenanceTask[];
     },
   });
 }
@@ -50,7 +22,14 @@ export function useActiveTasks() {
   return useQuery({
     queryKey: ['active-maintenance-tasks'],
     queryFn: async () => {
-      return fetchFromApi('/tasks?active=true');
+      const { data, error } = await supabase
+        .from('maintenance_tasks')
+        .select('*')
+        .eq('is_active', true)
+        .order('next_due_date', { ascending: true });
+      
+      if (error) throw error;
+      return data as MaintenanceTask[];
     },
   });
 }
@@ -59,7 +38,20 @@ export function useMaintenanceLogs() {
   return useQuery({
     queryKey: ['maintenance-logs'],
     queryFn: async () => {
-      return fetchFromApi('/logs');
+      const { data, error } = await supabase
+        .from('maintenance_logs')
+        .select(`
+          *,
+          maintenance_tasks (
+            id,
+            title
+          )
+        `)
+        .order('completed_at', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      return data as MaintenanceLog[];
     },
   });
 }
@@ -77,23 +69,31 @@ export function useCompleteTask() {
       completedBy: string; 
       notes?: string;
     }) => {
-      const newDueDate = new Date();
+      // Create the log entry
+      const { error: logError } = await supabase
+        .from('maintenance_logs')
+        .insert({
+          task_id: task.id,
+          completed_by: completedBy,
+          notes: notes || null,
+        });
+      
+      if (logError) throw logError;
+      
+      // Calculate new due date
+      const today = new Date();
+      const newDueDate = new Date(today);
       newDueDate.setDate(newDueDate.getDate() + task.frequency_days);
       
-      const response = await fetchFromApi('/tasks/complete', {
-        method: 'POST',
-        body: JSON.stringify({
-          taskId: task.id,
-          completedBy,
-          notes: notes || null,
-          newDueDate: newDueDate.toISOString().split('T')[0],
-        }),
-      });
+      // Update the task's next_due_date
+      const { error: updateError } = await supabase
+        .from('maintenance_tasks')
+        .update({ next_due_date: newDueDate.toISOString().split('T')[0] })
+        .eq('id', task.id);
       
-      return {
-        task: response?.task || task,
-        newDueDate
-      };
+      if (updateError) throw updateError;
+      
+      return { task, newDueDate };
     },
     onSuccess: ({ task, newDueDate }) => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -108,7 +108,7 @@ export function useCompleteTask() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to complete task. Please try again.",
+        description: "Failed to complete task. Please try again.",
         variant: "destructive",
       });
       console.error('Error completing task:', error);
@@ -121,10 +121,14 @@ export function useCreateTask() {
   
   return useMutation({
     mutationFn: async (task: Omit<MaintenanceTask, 'id' | 'created_at' | 'updated_at'>) => {
-      return fetchFromApi('/tasks', {
-        method: 'POST',
-        body: JSON.stringify(task),
-      });
+      const { data, error } = await supabase
+        .from('maintenance_tasks')
+        .insert(task)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -150,10 +154,15 @@ export function useUpdateTask() {
   
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<MaintenanceTask> & { id: string }) => {
-      return fetchFromApi(`/tasks/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      });
+      const { data, error } = await supabase
+        .from('maintenance_tasks')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
@@ -179,9 +188,12 @@ export function useDeleteTask() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      return fetchFromApi(`/tasks/${id}`, {
-        method: 'DELETE',
-      });
+      const { error } = await supabase
+        .from('maintenance_tasks')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
