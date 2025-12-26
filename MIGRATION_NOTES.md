@@ -32,7 +32,7 @@ psql -U postgres -d maintenance_db -f server/migrations/001_init_schema.sql
 Éditer le fichier `.env` :
 
 ```
-VITE_API_URL="http://localhost:3002"
+VITE_API_URL="http://52.47.190.29:3002"
 
 DB_USER="postgres"
 DB_PASSWORD="your_password"
