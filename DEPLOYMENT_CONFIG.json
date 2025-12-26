@@ -1,0 +1,241 @@
+{
+  "deployment": {
+    "project": "Workshop Reminder",
+    "target": "EC2 Instance (Ubuntu 20.04+)",
+    "deployment_method": "Single Script",
+    "estimated_duration_minutes": "5-10",
+    "automation_level": "100%"
+  },
+  "infrastructure": {
+    "frontend": {
+      "framework": "React 18",
+      "build_tool": "Vite",
+      "port": 8082,
+      "process": "npm run preview",
+      "service": "systemd (workshop-reminder)",
+      "restart_policy": "always",
+      "restart_delay_seconds": 10
+    },
+    "backend": {
+      "type": "PostgreSQL",
+      "version": 15,
+      "container": "Docker",
+      "port": 5432,
+      "port_bouncer": 6432,
+      "database": "postgres",
+      "user": "postgres",
+      "password": "postgres",
+      "data_persistence": true,
+      "volumes": {
+        "data": "postgres_data",
+        "migrations": "./supabase/migrations"
+      }
+    },
+    "ports": {
+      "frontend": 8082,
+      "backend_reserved": 8081,
+      "postgresql": 5432,
+      "pgadmin_optional": 8083
+    }
+  },
+  "scripts": {
+    "deployment": {
+      "file": "deploy-complete.sh",
+      "purpose": "Installation and setup complete",
+      "usage": "sudo bash deploy-complete.sh",
+      "components": [
+        "System update",
+        "Docker installation",
+        "Node.js installation",
+        "Code clone/pull",
+        "Dependencies installation",
+        "Environment configuration",
+        "Docker Compose setup",
+        "PostgreSQL startup",
+        "Database migrations",
+        "Application build",
+        "Systemd service creation",
+        "Service startup"
+      ]
+    },
+    "management": {
+      "setup": "setup.sh",
+      "validate": "validate.sh",
+      "show_status": "SHOW_STATUS.sh"
+    },
+    "utilities": {
+      "start": "scripts/start.sh",
+      "stop": "scripts/stop.sh",
+      "diagnostics": "scripts/diagnostics.sh",
+      "update": "scripts/update.sh",
+      "backup": "scripts/backup.sh",
+      "restore": "scripts/restore.sh"
+    }
+  },
+  "configuration": {
+    "environment_file": ".env.production",
+    "docker_compose": "docker-compose.yml",
+    "supabase_config": "supabase/config.toml",
+    "vite_config": "vite.config.ts",
+    "typescript_config": "tsconfig.json"
+  },
+  "database": {
+    "migrations": "supabase/migrations/",
+    "initial_migration": "20251210164958_7a977278-a84b-4e78-9630-28ee6b163d0a.sql",
+    "tables": [
+      {
+        "name": "maintenance_tasks",
+        "purpose": "Store maintenance task definitions",
+        "columns": [
+          "id (UUID, PK)",
+          "title (TEXT)",
+          "description (TEXT)",
+          "frequency_days (INTEGER)",
+          "next_due_date (DATE)",
+          "is_active (BOOLEAN)",
+          "created_at (TIMESTAMP)",
+          "updated_at (TIMESTAMP)"
+        ]
+      },
+      {
+        "name": "maintenance_logs",
+        "purpose": "Track completed tasks",
+        "columns": [
+          "id (UUID, PK)",
+          "task_id (UUID, FK)",
+          "completed_by (TEXT)",
+          "completed_at (TIMESTAMP)",
+          "notes (TEXT)"
+        ]
+      }
+    ],
+    "security": {
+      "row_level_security": true,
+      "policies": [
+        "Anyone can view tasks",
+        "Anyone can insert tasks",
+        "Anyone can update tasks",
+        "Anyone can delete tasks"
+      ]
+    }
+  },
+  "file_structure": {
+    "application_root": "/opt/workshop-reminder",
+    "key_directories": [
+      "src/ (React source code)",
+      "dist/ (Built application)",
+      "supabase/ (Database configuration)",
+      "scripts/ (Management utilities)",
+      "backups/ (Database backups)"
+    ]
+  },
+  "documentation": {
+    "start_here": {
+      "file": "START_HERE.md",
+      "purpose": "Entry point, quick overview"
+    },
+    "quick_start": {
+      "file": "QUICK_START.md",
+      "purpose": "3-step deployment guide",
+      "reading_time_minutes": 5
+    },
+    "full_guide": {
+      "file": "DEPLOYMENT.md",
+      "purpose": "Comprehensive deployment guide",
+      "reading_time_minutes": 20
+    },
+    "architecture": {
+      "file": "ARCHITECTURE.md",
+      "purpose": "Technical diagrams and structure",
+      "reading_time_minutes": 15
+    },
+    "structure": {
+      "file": "README_DEPLOYMENT.md",
+      "purpose": "File structure and organization",
+      "reading_time_minutes": 10
+    },
+    "summary": {
+      "file": "DEPLOYMENT_SUMMARY.md",
+      "purpose": "Executive summary",
+      "reading_time_minutes": 5
+    }
+  },
+  "deployment_steps": [
+    {
+      "step": 1,
+      "phase": "Preparation",
+      "action": "Push code to repository",
+      "command": "git push",
+      "duration_seconds": "30-60"
+    },
+    {
+      "step": 2,
+      "phase": "Connection",
+      "action": "Connect to EC2 via SSH",
+      "command": "ssh -i 'key.pem' ubuntu@IP",
+      "duration_seconds": "5"
+    },
+    {
+      "step": 3,
+      "phase": "Execution",
+      "action": "Run deployment script",
+      "command": "sudo bash deploy-complete.sh",
+      "duration_seconds": "300-600"
+    }
+  ],
+  "post_deployment": {
+    "verification": [
+      "Check service status: sudo systemctl status workshop-reminder",
+      "View logs: sudo journalctl -u workshop-reminder -f",
+      "Access frontend: http://IP:8082",
+      "Verify database: psql -h 127.0.0.1 -U postgres"
+    ],
+    "common_operations": {
+      "restart": "sudo systemctl restart workshop-reminder",
+      "stop": "sudo systemctl stop workshop-reminder",
+      "view_logs": "sudo journalctl -u workshop-reminder -f",
+      "update_code": "cd /opt/workshop-reminder && git pull && npm install && npm run build",
+      "backup_database": "bash scripts/backup.sh",
+      "diagnostics": "bash scripts/diagnostics.sh"
+    }
+  },
+  "features": [
+    "Fully automated deployment",
+    "Single command installation",
+    "Integrated PostgreSQL with Docker",
+    "Database migrations auto-applied",
+    "React frontend on port 8082",
+    "Systemd service with auto-restart",
+    "Centralized logging",
+    "Management scripts included",
+    "Backup and restore utilities",
+    "Comprehensive documentation"
+  ],
+  "requirements": {
+    "ec2_instance": {
+      "os": "Ubuntu 20.04 or later",
+      "minimum_ram": "1GB",
+      "recommended_ram": "2GB",
+      "disk_space": "10GB",
+      "access": "SSH with sudo privileges"
+    },
+    "local_machine": {
+      "git": "For code management",
+      "ssh_key": "For EC2 access"
+    }
+  },
+  "support": {
+    "documentation_locations": [
+      "START_HERE.md - Quick overview",
+      "DEPLOYMENT.md - Full guide",
+      "ARCHITECTURE.md - Technical details",
+      "DEPLOYMENT_SUMMARY.md - Executive summary"
+    ],
+    "troubleshooting": {
+      "logs": "sudo journalctl -u workshop-reminder -f",
+      "docker_status": "docker ps && docker logs workshop-postgres",
+      "database": "psql -h 127.0.0.1 -U postgres",
+      "diagnostics": "bash /opt/workshop-reminder/scripts/diagnostics.sh"
+    }
+  }
+}

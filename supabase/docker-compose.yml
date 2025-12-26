@@ -1,0 +1,77 @@
+# Configuration pour Supabase local sur EC2
+# À exécuter une seule fois sur l'EC2
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database - Base de données principale
+  postgres:
+    image: postgres:15-alpine
+    container_name: workshop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    
+    ports:
+      - "5433:5432"
+    
+    volumes:
+      # Persistance des données
+      - postgres_data:/var/lib/postgresql/data
+      # Appliquer les migrations au démarrage
+      - ./supabase/migrations:/docker-entrypoint-initdb.d
+    
+    networks:
+      - workshop
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgBouncer - Connection pooling
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: workshop-pgbouncer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    environment:
+      PGBOUNCER_DATABASES: "postgres=host=postgres port=5432 dbname=postgres user=postgres password=postgres"
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 1000
+      PGBOUNCER_DEFAULT_POOL_SIZE: 25
+    
+    ports:
+      - "6432:6432"
+    
+    networks:
+      - workshop
+
+  # Adminer - Interface d'administration PostgreSQL (optionnel)
+  adminer:
+    image: adminer
+    container_name: workshop-adminer
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+    depends_on:
+      - postgres
+    networks:
+      - workshop
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  workshop:
+    driver: bridge
