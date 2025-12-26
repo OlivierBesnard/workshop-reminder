@@ -131,16 +131,49 @@ app.post('/api/tasks', async (req, res) => {
 // PUT update task
 app.put('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, description, frequency_days, is_active, next_due_date } = req.body;
+  const updates = req.body;
 
   try {
-    const result = await pool.query(
-      `UPDATE maintenance_tasks 
-       SET title = $1, description = $2, frequency_days = $3, is_active = $4, next_due_date = $5
-       WHERE id = $6
-       RETURNING *`,
-      [title, description, frequency_days, is_active, next_due_date, id]
-    );
+    // Build dynamic UPDATE query based on provided fields
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramCount = 1;
+
+    if (updates.title !== undefined) {
+      fields.push(`title = $${paramCount}`);
+      values.push(updates.title);
+      paramCount++;
+    }
+    if (updates.description !== undefined) {
+      fields.push(`description = $${paramCount}`);
+      values.push(updates.description);
+      paramCount++;
+    }
+    if (updates.frequency_days !== undefined) {
+      fields.push(`frequency_days = $${paramCount}`);
+      values.push(updates.frequency_days);
+      paramCount++;
+    }
+    if (updates.is_active !== undefined) {
+      fields.push(`is_active = $${paramCount}`);
+      values.push(updates.is_active);
+      paramCount++;
+    }
+    if (updates.next_due_date !== undefined) {
+      fields.push(`next_due_date = $${paramCount}`);
+      values.push(updates.next_due_date);
+      paramCount++;
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    // Add id as the last parameter
+    values.push(id);
+    const updateQuery = `UPDATE maintenance_tasks SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${paramCount} RETURNING *`;
+
+    const result = await pool.query(updateQuery, values);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Task not found' });
