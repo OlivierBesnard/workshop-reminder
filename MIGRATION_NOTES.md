@@ -32,7 +32,7 @@ psql -U postgres -d maintenance_db -f server/migrations/001_init_schema.sql
 Éditer le fichier `.env` :
 
 ```
-VITE_API_URL="http://localhost:3000"
+VITE_API_URL="http://localhost:3002"
 
 DB_USER="postgres"
 DB_PASSWORD="your_password"
@@ -40,7 +40,7 @@ DB_HOST="localhost"
 DB_PORT="5432"
 DB_NAME="maintenance_db"
 
-API_PORT="3000"
+API_PORT="3002"
 ```
 
 ### 5. Installation des dépendances
