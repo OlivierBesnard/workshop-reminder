@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Industrial Dark Theme - Workshop Optimized */
+    --background: 220 20% 10%;
+    --foreground: 60 10% 92%;
+
+    --card: 220 18% 13%;
+    --card-foreground: 60 10% 92%;
+
+    --popover: 220 18% 13%;
+    --popover-foreground: 60 10% 92%;
+
+    --primary: 45 100% 50%;
+    --primary-foreground: 220 20% 10%;
+
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 60 10% 92%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 200 80% 50%;
+    --accent-foreground: 220 20% 10%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 60 10% 92%;
+
+    --border: 220 15% 22%;
+    --input: 220 15% 18%;
+    --ring: 45 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Status Colors */
+    --status-overdue: 0 75% 55%;
+    --status-due-today: 45 100% 50%;
+    --status-upcoming: 142 70% 45%;
+    --status-inactive: 220 10% 40%;
+
+    /* Industrial accents */
+    --industrial-stripe: 220 15% 15%;
+    --industrial-glow: 45 100% 50%;
+    --industrial-border: 220 15% 25%;
+
+    /* Sidebar (keeping for compatibility) */
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 60 10% 92%;
+    --sidebar-primary: 45 100% 50%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 60 10% 92%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 45 100% 50%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 60 10% 92%;
+    --card: 220 18% 13%;
+    --card-foreground: 60 10% 92%;
+    --popover: 220 18% 13%;
+    --popover-foreground: 60 10% 92%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 220 20% 10%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 60 10% 92%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 200 80% 50%;
+    --accent-foreground: 220 20% 10%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 60 10% 92%;
+    --border: 220 15% 22%;
+    --input: 220 15% 18%;
+    --ring: 45 100% 50%;
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 60 10% 92%;
+    --sidebar-primary: 45 100% 50%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 60 10% 92%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 45 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .industrial-grid {
+    background-image: 
+      linear-gradient(hsl(var(--industrial-stripe)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--industrial-stripe)) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .industrial-glow {
+    box-shadow: 0 0 20px hsl(var(--industrial-glow) / 0.15),
+                0 0 40px hsl(var(--industrial-glow) / 0.1);
+  }
+
+  .status-overdue {
+    @apply bg-destructive/10 border-destructive text-destructive;
+  }
+
+  .status-due-today {
+    background-color: hsl(var(--status-due-today) / 0.1);
+    border-color: hsl(var(--status-due-today));
+    color: hsl(var(--status-due-today));
+  }
+
+  .status-upcoming {
+    background-color: hsl(var(--status-upcoming) / 0.1);
+    border-color: hsl(var(--status-upcoming));
+    color: hsl(var(--status-upcoming));
+  }
+
+  .task-card-overdue {
+    border-left: 4px solid hsl(var(--status-overdue));
+  }
+
+  .task-card-due-today {
+    border-left: 4px solid hsl(var(--status-due-today));
+  }
+
+  .task-card-upcoming {
+    border-left: 4px solid hsl(var(--status-upcoming));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}

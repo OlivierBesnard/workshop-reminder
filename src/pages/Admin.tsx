@@ -1,0 +1,227 @@
+import { useState } from 'react';
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
+import { MaintenanceTask, getTaskStatus } from '@/types/maintenance';
+import { Header } from '@/components/Header';
+import { TaskFormDialog } from '@/components/TaskFormDialog';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Plus, Pencil, Trash2, Power, PowerOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+export default function Admin() {
+  const { data: tasks, isLoading } = useTasks();
+  const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
+  
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<MaintenanceTask | null>(null);
+  const [deletingTask, setDeletingTask] = useState<MaintenanceTask | null>(null);
+  
+  const handleCreate = () => {
+    setEditingTask(null);
+    setIsFormOpen(true);
+  };
+  
+  const handleEdit = (task: MaintenanceTask) => {
+    setEditingTask(task);
+    setIsFormOpen(true);
+  };
+  
+  const handleFormSubmit = (data: {
+    title: string;
+    description: string;
+    frequency_days: number;
+    next_due_date: string;
+    is_active: boolean;
+  }) => {
+    if (editingTask) {
+      updateTask.mutate(
+        { id: editingTask.id, ...data },
+        { onSuccess: () => setIsFormOpen(false) }
+      );
+    } else {
+      createTask.mutate(data, {
+        onSuccess: () => setIsFormOpen(false),
+      });
+    }
+  };
+  
+  const handleToggleActive = (task: MaintenanceTask) => {
+    updateTask.mutate({ id: task.id, is_active: !task.is_active });
+  };
+  
+  const handleConfirmDelete = () => {
+    if (deletingTask) {
+      deleteTask.mutate(deletingTask.id, {
+        onSuccess: () => setDeletingTask(null),
+      });
+    }
+  };
+  
+  const statusBadgeClass = (task: MaintenanceTask) => {
+    if (!task.is_active) return 'bg-muted text-muted-foreground';
+    const status = getTaskStatus(task);
+    switch (status) {
+      case 'overdue':
+        return 'bg-destructive/20 text-destructive border-destructive/50';
+      case 'due-today':
+        return 'bg-status-due-today/20 text-status-due-today border-status-due-today/50';
+      case 'upcoming':
+        return 'bg-status-upcoming/20 text-status-upcoming border-status-upcoming/50';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+  
+  return (
+    <div className="min-h-screen bg-background industrial-grid">
+      <Header />
+      
+      <main className="container py-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-display font-bold">Manage Tasks</h2>
+            <p className="text-muted-foreground">
+              Create and configure maintenance schedules
+            </p>
+          </div>
+          <Button onClick={handleCreate} size="lg">
+            <Plus className="w-5 h-5 mr-2" />
+            Add Task
+          </Button>
+        </div>
+        
+        {isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map(i => (
+              <Skeleton key={i} className="h-16 rounded-lg" />
+            ))}
+          </div>
+        ) : tasks && tasks.length > 0 ? (
+          <div className="rounded-lg border-2 border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                  <TableHead className="font-display font-bold">Task</TableHead>
+                  <TableHead className="font-display font-bold hidden sm:table-cell">Frequency</TableHead>
+                  <TableHead className="font-display font-bold">Due Date</TableHead>
+                  <TableHead className="font-display font-bold">Status</TableHead>
+                  <TableHead className="font-display font-bold text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tasks.map(task => (
+                  <TableRow key={task.id} className={cn(!task.is_active && 'opacity-60')}>
+                    <TableCell>
+                      <div className="font-semibold">{task.title}</div>
+                      {task.description && (
+                        <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                          {task.description}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell font-mono">
+                      {task.frequency_days} days
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {new Date(task.next_due_date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={statusBadgeClass(task)}>
+                        {!task.is_active 
+                          ? 'Inactive' 
+                          : getTaskStatus(task).replace('-', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleToggleActive(task)}
+                          title={task.is_active ? 'Deactivate' : 'Activate'}
+                        >
+                          {task.is_active ? (
+                            <PowerOff className="w-4 h-4" />
+                          ) : (
+                            <Power className="w-4 h-4 text-status-upcoming" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(task)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeletingTask(task)}
+                          className="hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <EmptyState type="tasks" />
+        )}
+      </main>
+      
+      <TaskFormDialog
+        task={editingTask}
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleFormSubmit}
+        isLoading={createTask.isPending || updateTask.isPending}
+      />
+      
+      <AlertDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingTask?.title}"? This will also remove all associated maintenance logs.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
