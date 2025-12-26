@@ -57,8 +57,6 @@ echo ""
 # Étape 3: Créer/mettre à jour docker-compose.yml
 echo -e "${YELLOW}🐳 Étape 3: Configuration Docker Compose...${NC}"
 cat > "$DOCKER_COMPOSE_FILE" << 'COMPOSE_EOF'
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -86,8 +84,8 @@ services:
       dockerfile: Dockerfile
     container_name: fulfiller-app
     ports:
+      - "8082:5173"
       - "3565:3565"
-      - "3000:3000"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
@@ -96,6 +94,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       PORT: 3565
       NODE_ENV: production
+      VITE_API_URL: http://localhost:3565
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,6 +105,11 @@ services:
     networks:
       - fulfiller-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3565/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
 volumes:
   postgres_data:
@@ -145,10 +149,26 @@ echo "Docker Compose: $(docker-compose --version)"
 echo -e "${GREEN}✅ Tous les prérequis sont ok${NC}"
 echo ""
 
-# Étape 6: Lancer docker-compose
+# Étape 6: Lancer docker-compose avec retry
 echo -e "${YELLOW}🚀 Étape 6: Lancement des conteneurs...${NC}"
-docker-compose up -d --build
-echo -e "${GREEN}✅ Conteneurs lancés${NC}"
+MAX_RETRIES=3
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if docker-compose up -d --build; then
+        echo -e "${GREEN}✅ Conteneurs lancés${NC}"
+        break
+    else
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+            echo -e "${YELLOW}⚠️  Build échoué, tentative $RETRY_COUNT/$MAX_RETRIES...${NC}"
+            sleep 5
+        else
+            echo -e "${RED}❌ Impossible de lancer les conteneurs après $MAX_RETRIES tentatives${NC}"
+            exit 1
+        fi
+    fi
+done
 echo ""
 
 # Étape 7: Attendre que PostgreSQL soit prêt
@@ -181,8 +201,8 @@ echo "✅ SETUP TERMINÉ AVEC SUCCÈS!"
 echo "========================================${NC}"
 echo ""
 echo -e "${YELLOW}📊 Informations de connexion:${NC}"
-echo "Application:  http://localhost:3565"
-echo "Dev Server:   http://localhost:3000"
+echo "Frontend:   http://localhost:8082"
+echo "Backend:    http://localhost:3565"
 echo ""
 echo -e "${YELLOW}🗄️  Données PostgreSQL:${NC}"
 echo "Host:     localhost"
