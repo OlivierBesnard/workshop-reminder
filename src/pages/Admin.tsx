@@ -3,6 +3,7 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/u
 import { MaintenanceTask, getTaskStatus } from '@/types/maintenance';
 import { Header } from '@/components/Header';
 import { TaskFormDialog } from '@/components/TaskFormDialog';
+import { AdminPasswordDialog } from '@/components/AdminPasswordDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,13 +38,23 @@ export default function Admin() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<MaintenanceTask | null>(null);
   const [deletingTask, setDeletingTask] = useState<MaintenanceTask | null>(null);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(true);
   
   const handleCreate = () => {
+    if (!isAdminAuthenticated) {
+      setShowPasswordDialog(true);
+      return;
+    }
     setEditingTask(null);
     setIsFormOpen(true);
   };
   
   const handleEdit = (task: MaintenanceTask) => {
+    if (!isAdminAuthenticated) {
+      setShowPasswordDialog(true);
+      return;
+    }
     setEditingTask(task);
     setIsFormOpen(true);
   };
@@ -68,10 +79,18 @@ export default function Admin() {
   };
   
   const handleToggleActive = (task: MaintenanceTask) => {
+    if (!isAdminAuthenticated) {
+      setShowPasswordDialog(true);
+      return;
+    }
     updateTask.mutate({ id: task.id, is_active: !task.is_active });
   };
   
   const handleConfirmDelete = () => {
+    if (!isAdminAuthenticated) {
+      setShowPasswordDialog(true);
+      return;
+    }
     if (deletingTask) {
       deleteTask.mutate(deletingTask.id, {
         onSuccess: () => setDeletingTask(null),
@@ -234,6 +253,12 @@ export default function Admin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AdminPasswordDialog
+        open={showPasswordDialog}
+        onOpenChange={setShowPasswordDialog}
+        onPasswordSubmit={() => setIsAdminAuthenticated(true)}
+      />
     </div>
   );
 }
