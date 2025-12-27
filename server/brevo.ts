@@ -47,28 +47,28 @@ export async function sendOverdueTaskReminder(
   daysOverdue: number
 ): Promise<boolean> {
   const htmlContent = `
-    <h2>Maintenance Task Reminder</h2>
-    <p>Hello,</p>
-    <p>The following maintenance task is <strong>${daysOverdue} day(s) overdue</strong>:</p>
+    <h2>Rappel de Tâche de Maintenance</h2>
+    <p>Bonjour,</p>
+    <p>La tâche de maintenance suivante est <strong>en retard de ${daysOverdue} jour(s)</strong> :</p>
     <p><strong>${taskTitle}</strong></p>
-    <p>Please complete this task as soon as possible.</p>
-    <p>Best regards,<br>Maintenance Team</p>
+    <p>Veuillez effectuer cette tâche dès que possible.</p>
+    <p>Cordialement,<br>Équipe de Maintenance</p>
   `;
 
   const textContent = `
-    Maintenance Task Reminder
+    Rappel de Tâche de Maintenance
     
-    The following maintenance task is ${daysOverdue} day(s) overdue:
+    La tâche de maintenance suivante est en retard de ${daysOverdue} jour(s) :
     ${taskTitle}
     
-    Please complete this task as soon as possible.
+    Veuillez effectuer cette tâche dès que possible.
     
-    Best regards,
-    Maintenance Team
+    Cordialement,
+    Équipe de Maintenance
   `;
 
   return sendEmail({
-    subject: `[OVERDUE] Maintenance Task: ${taskTitle}`,
+    subject: `[EN RETARD] Tâche de Maintenance : ${taskTitle}`,
     htmlContent,
     textContent,
   });
