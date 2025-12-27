@@ -3,6 +3,7 @@ import cors from 'cors';
 import pool from './db';
 import { MaintenanceTask, MaintenanceLog } from '../src/types/maintenance';
 import { sendOverdueTaskReminder } from './brevo';
+import { startScheduler } from './scheduler';
 
 const app = express();
 
@@ -312,4 +313,6 @@ app.get('/api/tasks/overdue', async (req, res) => {
 const PORT = process.env.API_PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  // Start the scheduler for daily reminders at 8 AM
+  startScheduler();
 });
