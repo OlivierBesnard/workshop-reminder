@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { MaintenanceTask, getTaskStatus } from '@/types/maintenance';
 import { Header } from '@/components/Header';
 import { TaskFormDialog } from '@/components/TaskFormDialog';
@@ -30,20 +32,22 @@ import { Plus, Pencil, Trash2, Power, PowerOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Admin() {
+  const navigate = useNavigate();
   const { data: tasks, isLoading } = useTasks();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+  const { isAdminAuthenticated, authenticate, isCheckingAuth } = useAdminAuth();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<MaintenanceTask | null>(null);
   const [deletingTask, setDeletingTask] = useState<MaintenanceTask | null>(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(true);
+  
+  // Afficher le dialogue seulement si pas d'authentification ET pas en train de vérifier
+  const shouldShowPasswordDialog = !isAdminAuthenticated && !isCheckingAuth;
   
   const handleCreate = () => {
     if (!isAdminAuthenticated) {
-      setShowPasswordDialog(true);
       return;
     }
     setEditingTask(null);
@@ -52,7 +56,6 @@ export default function Admin() {
   
   const handleEdit = (task: MaintenanceTask) => {
     if (!isAdminAuthenticated) {
-      setShowPasswordDialog(true);
       return;
     }
     setEditingTask(task);
@@ -80,7 +83,6 @@ export default function Admin() {
   
   const handleToggleActive = (task: MaintenanceTask) => {
     if (!isAdminAuthenticated) {
-      setShowPasswordDialog(true);
       return;
     }
     updateTask.mutate({ id: task.id, is_active: !task.is_active });
@@ -88,7 +90,6 @@ export default function Admin() {
   
   const handleConfirmDelete = () => {
     if (!isAdminAuthenticated) {
-      setShowPasswordDialog(true);
       return;
     }
     if (deletingTask) {
@@ -255,9 +256,10 @@ export default function Admin() {
       </AlertDialog>
 
       <AdminPasswordDialog
-        open={showPasswordDialog}
-        onOpenChange={setShowPasswordDialog}
-        onPasswordSubmit={() => setIsAdminAuthenticated(true)}
+        open={shouldShowPasswordDialog}
+        onOpenChange={() => {}}
+        onPasswordSubmit={authenticate}
+        onCancel={() => navigate('/')}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,21 +16,25 @@ interface AdminPasswordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPasswordSubmit: (password: string) => void;
+  onCancel?: () => void;
 }
 
 export function AdminPasswordDialog({
   open,
   onOpenChange,
   onPasswordSubmit,
+  onCancel,
 }: AdminPasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const authenticatedRef = useRef(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
 
     if (password === adminPassword) {
+      authenticatedRef.current = true;
       setPassword('');
       setError('');
       onPasswordSubmit(password);
@@ -45,13 +49,24 @@ export function AdminPasswordDialog({
     if (newOpen) {
       setPassword('');
       setError('');
+      authenticatedRef.current = false;
+    } else {
+      // Ne naviguer que si on ferme sans succès d'authentification
+      if (!authenticatedRef.current) {
+        onCancel?.();
+      }
+      authenticatedRef.current = false;
     }
     onOpenChange(newOpen);
   };
 
+  const handleInteractOutside = (e: Event) => {
+    e.preventDefault();
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onInteractOutside={handleInteractOutside}>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="font-display text-xl flex items-center gap-2">
