@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pool from './db';
 import { MaintenanceTask, MaintenanceLog } from '../src/types/maintenance';
+import { sendOverdueTaskReminder } from './brevo';
 
 const app = express();
 
@@ -208,6 +209,100 @@ app.delete('/api/tasks/:id', async (req, res) => {
   } catch (error) {
     console.error('Error deleting task:', error);
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
+// POST send overdue reminders
+app.post('/api/tasks/send-reminders', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    // Get overdue tasks
+    const result = await pool.query(
+      `SELECT * FROM maintenance_tasks 
+       WHERE is_active = true AND next_due_date < $1
+       ORDER BY next_due_date ASC`,
+      [today.toISOString()]
+    );
+
+    const overdueTasks = result.rows as MaintenanceTask[];
+    let remindersCount = 0;
+
+    for (const task of overdueTasks) {
+      const dueDate = new Date(task.next_due_date);
+      const daysOverdue = Math.floor(
+        (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Check if already sent reminder today
+      const reminderCheck = await pool.query(
+        `SELECT * FROM email_reminders 
+         WHERE task_id = $1 AND DATE(sent_at) = $2`,
+        [task.id, today.toISOString().split('T')[0]]
+      );
+
+      if (reminderCheck.rows.length === 0) {
+        const emailSent = await sendOverdueTaskReminder(
+          email,
+          task.title,
+          daysOverdue
+        );
+
+        if (emailSent) {
+          // Record the reminder
+          await pool.query(
+            `INSERT INTO email_reminders (task_id, recipient_email, days_overdue)
+             VALUES ($1, $2, $3)`,
+            [task.id, email, daysOverdue]
+          );
+          remindersCount++;
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `${remindersCount} reminder(s) sent`,
+      overdueTasks: overdueTasks.length,
+      remindersSent: remindersCount,
+    });
+  } catch (error) {
+    console.error('Error sending reminders:', error);
+    res.status(500).json({ error: 'Failed to send reminders' });
+  }
+});
+
+// GET overdue tasks
+app.get('/api/tasks/overdue', async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const result = await pool.query(
+      `SELECT *, 
+              (CURRENT_DATE - next_due_date) as days_overdue
+       FROM maintenance_tasks 
+       WHERE is_active = true AND next_due_date < $1
+       ORDER BY next_due_date ASC`,
+      [today.toISOString().split('T')[0]]
+    );
+
+    const overdueTasks = result.rows.map((task: any) => ({
+      ...task,
+      daysOverdue: parseInt(task.days_overdue),
+    }));
+
+    res.json(overdueTasks);
+  } catch (error) {
+    console.error('Error fetching overdue tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch overdue tasks' });
   }
 });
 
