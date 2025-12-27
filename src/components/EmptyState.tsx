@@ -13,14 +13,14 @@ export function EmptyState({ type }: EmptyStateProps) {
         <div className="flex items-center justify-center w-16 h-16 rounded-full bg-status-upcoming/20 mb-4">
           <CheckCircle2 className="w-8 h-8 text-status-upcoming" />
         </div>
-        <h3 className="text-xl font-display font-bold mb-2">All Caught Up!</h3>
+        <h3 className="text-xl font-display font-bold mb-2">Tout est à jour !</h3>
         <p className="text-muted-foreground max-w-sm mb-6">
-          No maintenance tasks are due today or overdue. Great job keeping the workshop in shape!
+          Aucune tâche de maintenance n'est due aujourd'hui ou en retard. Excellent travail pour maintenir l'atelier en bon état !
         </p>
         <Button asChild variant="outline">
           <Link to="/admin">
             <Plus className="w-4 h-4 mr-2" />
-            Add New Task
+            Ajouter une nouvelle tâche
           </Link>
         </Button>
       </div>
@@ -32,9 +32,9 @@ export function EmptyState({ type }: EmptyStateProps) {
       <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
         <Plus className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-display font-bold mb-2">No Tasks Yet</h3>
+      <h3 className="text-xl font-display font-bold mb-2">Aucune tâche encore</h3>
       <p className="text-muted-foreground max-w-sm">
-        Create your first maintenance task to get started tracking workshop maintenance.
+        Créez votre première tâche de maintenance pour commencer à suivre la maintenance de l'atelier.
       </p>
     </div>
   );

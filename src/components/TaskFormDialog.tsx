@@ -79,23 +79,23 @@ export function TaskFormDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="font-display text-xl">
-              {isEditing ? 'Edit Task' : 'New Maintenance Task'}
+              {isEditing ? 'Modifier la tâche' : 'Nouvelle tâche de maintenance'}
             </DialogTitle>
             <DialogDescription>
               {isEditing 
-                ? 'Update the maintenance task details.' 
-                : 'Create a new recurring maintenance task.'}
+                ? 'Mettez à jour les détails de la tâche de maintenance.' 
+                : 'Créez une nouvelle tâche de maintenance récurrente.'}
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-6">
             <div className="grid gap-2">
               <Label htmlFor="title" className="font-semibold">
-                Task Title <span className="text-destructive">*</span>
+                Titre de la tâche <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
-                placeholder="e.g., Clean CNC Filter"
+                placeholder="Ex. : Nettoyer le filtre CNC"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-12"
@@ -110,7 +110,7 @@ export function TaskFormDialog({
               </Label>
               <Textarea
                 id="description"
-                placeholder="Instructions or details for this task..."
+                placeholder="Instructions ou détails pour cette tâche..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[80px] resize-none"
@@ -120,7 +120,7 @@ export function TaskFormDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="frequency" className="font-semibold">
-                  Frequency (days) <span className="text-destructive">*</span>
+                  Fréquence (jours) <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="frequency"
@@ -137,7 +137,7 @@ export function TaskFormDialog({
               
               <div className="grid gap-2">
                 <Label htmlFor="dueDate" className="font-semibold">
-                  Next Due Date <span className="text-destructive">*</span>
+                  Prochaine date d'échéance <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="dueDate"
@@ -153,10 +153,10 @@ export function TaskFormDialog({
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <Label htmlFor="active" className="font-semibold cursor-pointer">
-                  Active
+                  Actif
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Inactive tasks won't appear on the dashboard
+                  Les tâches inactives n'apparaîtront pas sur le tableau de bord
                 </p>
               </div>
               <Switch
@@ -174,7 +174,7 @@ export function TaskFormDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               type="submit"
@@ -186,12 +186,12 @@ export function TaskFormDialog({
               ) : isEditing ? (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save
+                  Enregistrer
                 </>
               ) : (
                 <>
                   <Plus className="w-4 h-4 mr-2" />
-                  Create
+                  Créer
                 </>
               )}
             </Button>

@@ -54,7 +54,7 @@ export function CompleteTaskDialog({
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">Complete Task</DialogTitle>
+            <DialogTitle className="font-display text-xl">Marquer la tâche complète</DialogTitle>
             <DialogDescription className="text-muted-foreground">
               {task?.title}
             </DialogDescription>
@@ -63,11 +63,11 @@ export function CompleteTaskDialog({
           <div className="grid gap-4 py-6">
             <div className="grid gap-2">
               <Label htmlFor="name" className="font-semibold">
-                Your Name <span className="text-destructive">*</span>
+                Votre nom <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="Enter your name"
+                placeholder="Entrez votre nom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="h-12 text-base"
@@ -78,11 +78,11 @@ export function CompleteTaskDialog({
             
             <div className="grid gap-2">
               <Label htmlFor="notes" className="font-semibold">
-                Notes <span className="text-muted-foreground">(optional)</span>
+                Remarques <span className="text-muted-foreground">(optionnel)</span>
               </Label>
               <Textarea
                 id="notes"
-                placeholder="Any remarks or observations..."
+                placeholder="Toute remarque ou observation..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[100px] resize-none"
@@ -97,7 +97,7 @@ export function CompleteTaskDialog({
               onClick={() => handleClose(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               type="submit"
@@ -111,7 +111,7 @@ export function CompleteTaskDialog({
               ) : (
                 <>
                   <CheckCircle2 className="w-5 h-5 mr-2" />
-                  Confirm
+                  Confirmer
                 </>
               )}
             </Button>

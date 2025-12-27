@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MaintenanceTask, MaintenanceLog } from '@/types/maintenance';
 import { toast } from '@/hooks/use-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://52.47.190.29:3002';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
 export function useTasks() {
   return useQuery({
@@ -99,14 +99,14 @@ export function useCreateTask() {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['active-maintenance-tasks'] });
       toast({
-        title: "Task Created",
-        description: "New maintenance task has been added.",
+        title: "Tâche Créée",
+        description: "Une nouvelle tâche de maintenance a été ajoutée.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create task. Please try again.",
+        title: "Erreur",
+        description: "Échec de la création de la tâche. Veuillez réessayer.",
         variant: "destructive",
       });
       console.error('Error creating task:', error);
@@ -132,14 +132,14 @@ export function useUpdateTask() {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['active-maintenance-tasks'] });
       toast({
-        title: "Task Updated",
-        description: "Maintenance task has been updated.",
+        title: "Tâche Mise à Jour",
+        description: "La tâche de maintenance a été mise à jour.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update task. Please try again.",
+        title: "Erreur",
+        description: "Échec de la mise à jour de la tâche. Veuillez réessayer.",
         variant: "destructive",
       });
       console.error('Error updating task:', error);
@@ -162,14 +162,14 @@ export function useDeleteTask() {
       queryClient.invalidateQueries({ queryKey: ['maintenance-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['active-maintenance-tasks'] });
       toast({
-        title: "Task Deleted",
-        description: "Maintenance task has been removed.",
+        title: "Tâche Supprimée",
+        description: "La tâche de maintenance a été supprimée.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete task. Please try again.",
+        title: "Erreur",
+        description: "Échec de la suppression de la tâche. Veuillez réessayer.",
         variant: "destructive",
       });
       console.error('Error deleting task:', error);

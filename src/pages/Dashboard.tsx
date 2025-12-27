@@ -77,7 +77,7 @@ export default function Dashboard() {
         <section>
           <h2 className="text-lg font-display font-bold mb-4 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-            Requires Attention
+            Nécessite une attention
           </h2>
           
           {isLoading ? (
@@ -102,7 +102,7 @@ export default function Dashboard() {
           <section>
             <h2 className="text-lg font-display font-bold mb-4 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-status-upcoming" />
-              Upcoming Tasks
+              Tâches à venir
             </h2>
             
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

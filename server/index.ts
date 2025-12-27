@@ -195,6 +195,9 @@ app.delete('/api/tasks/:id', async (req, res) => {
     // Delete associated logs first
     await pool.query('DELETE FROM maintenance_logs WHERE task_id = $1', [id]);
     
+    // Delete associated email reminders
+    await pool.query('DELETE FROM email_reminders WHERE task_id = $1', [id]);
+    
     // Delete the task
     const result = await pool.query(
       'DELETE FROM maintenance_tasks WHERE id = $1 RETURNING id',

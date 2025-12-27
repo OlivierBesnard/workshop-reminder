@@ -7,9 +7,9 @@ export function Header() {
   const location = useLocation();
   
   const navItems = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/admin', label: 'Manage', icon: Settings },
-    { to: '/history', label: 'History', icon: History },
+    { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
+    { to: '/admin', label: 'Gérer', icon: Settings },
+    { to: '/history', label: 'Historique', icon: History },
   ];
   
   return (
@@ -21,10 +21,10 @@ export function Header() {
           </div>
           <div className="hidden sm:block">
             <h1 className="text-lg font-display font-bold tracking-tight">
-              Workshop Manager
+              Gestionnaire d'Atelier
             </h1>
             <p className="text-xs text-muted-foreground -mt-0.5">
-              Maintenance Tracker
+              Suivi des Maintenances
             </p>
           </div>
         </Link>

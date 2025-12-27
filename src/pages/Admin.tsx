@@ -93,6 +93,18 @@ export default function Admin() {
         return 'bg-muted text-muted-foreground';
     }
   };
+
+  const getStatusLabel = (task: MaintenanceTask): string => {
+    if (!task.is_active) return 'Inactif';
+    const status = getTaskStatus(task);
+    const statusLabels: Record<string, string> = {
+      'overdue': 'En retard',
+      'due-today': 'Échéance aujourd\'hui',
+      'upcoming': 'À venir',
+      'inactive': 'Inactif'
+    };
+    return statusLabels[status] || status;
+  };
   
   return (
     <div className="min-h-screen bg-background industrial-grid">
@@ -101,14 +113,14 @@ export default function Admin() {
       <main className="container py-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-display font-bold">Manage Tasks</h2>
+            <h2 className="text-2xl font-display font-bold">Gérer les tâches</h2>
             <p className="text-muted-foreground">
-              Create and configure maintenance schedules
+              Créer et configurer les calendriers de maintenance
             </p>
           </div>
           <Button onClick={handleCreate} size="lg">
             <Plus className="w-5 h-5 mr-2" />
-            Add Task
+            Ajouter une tâche
           </Button>
         </div>
         
@@ -123,10 +135,10 @@ export default function Admin() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-                  <TableHead className="font-display font-bold">Task</TableHead>
-                  <TableHead className="font-display font-bold hidden sm:table-cell">Frequency</TableHead>
-                  <TableHead className="font-display font-bold">Due Date</TableHead>
-                  <TableHead className="font-display font-bold">Status</TableHead>
+                  <TableHead className="font-display font-bold">Tâche</TableHead>
+                  <TableHead className="font-display font-bold hidden sm:table-cell">Fréquence</TableHead>
+                  <TableHead className="font-display font-bold">Date d'échéance</TableHead>
+                  <TableHead className="font-display font-bold">Statut</TableHead>
                   <TableHead className="font-display font-bold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -142,16 +154,14 @@ export default function Admin() {
                       )}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell font-mono">
-                      {task.frequency_days} days
+                      {task.frequency_days} jours
                     </TableCell>
                     <TableCell className="font-mono text-sm">
                       {new Date(task.next_due_date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusBadgeClass(task)}>
-                        {!task.is_active 
-                          ? 'Inactive' 
-                          : getTaskStatus(task).replace('-', ' ')}
+                        {getStatusLabel(task)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -160,7 +170,7 @@ export default function Admin() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleToggleActive(task)}
-                          title={task.is_active ? 'Deactivate' : 'Activate'}
+                          title={task.is_active ? 'Désactiver' : 'Activer'}
                         >
                           {task.is_active ? (
                             <PowerOff className="w-4 h-4" />
@@ -172,6 +182,7 @@ export default function Admin() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEdit(task)}
+                          title="Modifier"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -180,6 +191,7 @@ export default function Admin() {
                           size="icon"
                           onClick={() => setDeletingTask(task)}
                           className="hover:text-destructive"
+                          title="Supprimer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -206,18 +218,18 @@ export default function Admin() {
       <AlertDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer la tâche</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingTask?.title}"? This will also remove all associated maintenance logs.
+              Êtes-vous sûr de vouloir supprimer « {deletingTask?.title} » ? Cela supprimera également tous les journaux de maintenance associés.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

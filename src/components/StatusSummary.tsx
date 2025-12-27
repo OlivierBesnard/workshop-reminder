@@ -21,7 +21,7 @@ export function StatusSummary({ tasks }: StatusSummaryProps) {
           <p className="text-2xl font-display font-bold text-destructive">
             {overdueTasks.length}
           </p>
-          <p className="text-xs text-muted-foreground font-medium">Overdue</p>
+          <p className="text-xs text-muted-foreground font-medium">En retard</p>
         </div>
       </div>
       
@@ -33,7 +33,7 @@ export function StatusSummary({ tasks }: StatusSummaryProps) {
           <p className="text-2xl font-display font-bold text-status-due-today">
             {dueTodayTasks.length}
           </p>
-          <p className="text-xs text-muted-foreground font-medium">Due Today</p>
+          <p className="text-xs text-muted-foreground font-medium">Échéance aujourd'hui</p>
         </div>
       </div>
       
@@ -45,7 +45,7 @@ export function StatusSummary({ tasks }: StatusSummaryProps) {
           <p className="text-2xl font-display font-bold text-status-upcoming">
             {upcomingTasks.length}
           </p>
-          <p className="text-xs text-muted-foreground font-medium">Upcoming</p>
+          <p className="text-xs text-muted-foreground font-medium">À venir</p>
         </div>
       </div>
     </div>

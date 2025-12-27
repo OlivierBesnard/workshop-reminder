@@ -22,9 +22,9 @@ export default function History() {
       
       <main className="container py-6 space-y-6">
         <div>
-          <h2 className="text-2xl font-display font-bold">Maintenance History</h2>
+          <h2 className="text-2xl font-display font-bold">Historique de maintenance</h2>
           <p className="text-muted-foreground">
-            Record of all completed maintenance tasks
+            Enregistrement de toutes les tâches de maintenance complétées
           </p>
         </div>
         
@@ -39,10 +39,10 @@ export default function History() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-                  <TableHead className="font-display font-bold">Task</TableHead>
-                  <TableHead className="font-display font-bold">Completed By</TableHead>
+                  <TableHead className="font-display font-bold">Tâche</TableHead>
+                  <TableHead className="font-display font-bold">Complétée par</TableHead>
                   <TableHead className="font-display font-bold hidden sm:table-cell">Date</TableHead>
-                  <TableHead className="font-display font-bold hidden md:table-cell">Notes</TableHead>
+                  <TableHead className="font-display font-bold hidden md:table-cell">Remarques</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -97,9 +97,9 @@ export default function History() {
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
               <CheckCircle2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-display font-bold mb-2">No History Yet</h3>
+            <h3 className="text-xl font-display font-bold mb-2">Pas d'historique encore</h3>
             <p className="text-muted-foreground max-w-sm">
-              Completed maintenance tasks will appear here.
+              Les tâches de maintenance complétées apparaîtront ici.
             </p>
           </div>
         )}

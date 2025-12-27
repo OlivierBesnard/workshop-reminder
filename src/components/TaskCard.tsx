@@ -16,25 +16,25 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
   
   const statusConfig = {
     overdue: {
-      label: `${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) !== 1 ? 's' : ''} overdue`,
+      label: `En retard de ${Math.abs(daysUntilDue)} jour${Math.abs(daysUntilDue) !== 1 ? 's' : ''}`,
       icon: AlertTriangle,
       cardClass: 'task-card-overdue',
       badgeClass: 'bg-destructive/20 text-destructive border-destructive/50',
     },
     'due-today': {
-      label: 'Due Today',
+      label: 'Échéance aujourd\'hui',
       icon: Clock,
       cardClass: 'task-card-due-today',
       badgeClass: 'bg-status-due-today/20 text-status-due-today border-status-due-today/50',
     },
     upcoming: {
-      label: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`,
+      label: `Échéance dans ${daysUntilDue} jour${daysUntilDue !== 1 ? 's' : ''}`,
       icon: CalendarDays,
       cardClass: 'task-card-upcoming',
       badgeClass: 'bg-status-upcoming/20 text-status-upcoming border-status-upcoming/50',
     },
     inactive: {
-      label: 'Inactive',
+      label: 'Inactif',
       icon: Clock,
       cardClass: 'border-muted',
       badgeClass: 'bg-muted text-muted-foreground border-muted',
@@ -76,7 +76,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
         
         <div className="flex items-center justify-between gap-3 pt-2">
           <div className="text-xs text-muted-foreground font-mono">
-            Every {task.frequency_days} day{task.frequency_days !== 1 ? 's' : ''}
+            Tous les {task.frequency_days} jour{task.frequency_days !== 1 ? 's' : ''}
           </div>
           
           <Button
@@ -86,7 +86,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
             className="font-bold min-w-[140px]"
           >
             <CheckCircle2 className="w-5 h-5 mr-2" />
-            Mark Done
+            Marquer fait
           </Button>
         </div>
       </CardContent>
